@@ -23,8 +23,11 @@ def query(payload):
 # Streamlit app
 def main():
     st.title("SMVDU Information Chatbot")
-    # Display the university icon
-    st.image("university_icon.png", width=100)  # Adjust width as needed
+    # URL of the university icon
+    image_url = "https://smvdu.ac.in/wp-content/uploads/2023/08/cropped-logo-600-1.png"
+
+    # Display the image
+    st.image(image_url, width=100)
     
     # Define the context
     context = """

@@ -208,6 +208,10 @@ def main():
     """
 
 
+    # Initialize session state to store questions and answers
+    if "history" not in st.session_state:
+        st.session_state.history = []
+
     # Text input for the user's question
     user_question = st.text_input("Ask a question about SMVDU:")
 
@@ -216,10 +220,21 @@ def main():
         payload = {"inputs": {"question": user_question, "context": context}}
         result = query(payload)
         
-        # Display the result
+        # Store the question and answer in session state
         if result:
-            st.write("### Answer")
-            st.write(result.get("answer", "No answer found"))
+            answer = result.get("answer", "No answer found")
+            st.session_state.history.append({"question": user_question, "answer": answer})
+        
+        # Clear the input box after submission
+        st.experimental_rerun()
+
+    # Display the history of questions and answers
+    if st.session_state.history:
+        st.write("### Previous Questions and Answers")
+        for entry in st.session_state.history:
+            st.write(f"**Question:** {entry['question']}")
+            st.write(f"**Answer:** {entry['answer']}")
+            st.write("---")
 
 if __name__ == "__main__":
     main()

@@ -207,7 +207,6 @@ def main():
     The information provided should be strictly related to Shri Mata Vaishno Devi University (also known as SMVDU). Any mention of other universities should be avoided.
     """
 
-
     # Initialize session state to store questions and answers
     if "history" not in st.session_state:
         st.session_state.history = []
@@ -215,7 +214,7 @@ def main():
     # Text input for the user's question
     user_question = st.text_input("Ask a question about SMVDU:")
 
-    if user_question:
+    if user_question and st.button("Submit"):
         # Query the API
         payload = {"inputs": {"question": user_question, "context": context}}
         result = query(payload)
@@ -224,10 +223,8 @@ def main():
         if result:
             answer = result.get("answer", "No answer found")
             st.session_state.history.append({"question": user_question, "answer": answer})
+            user_question = ""  # Clear input after submission
         
-        # Clear the input box after submission
-        st.experimental_rerun()
-
     # Display the history of questions and answers
     if st.session_state.history:
         st.write("### Previous Questions and Answers")

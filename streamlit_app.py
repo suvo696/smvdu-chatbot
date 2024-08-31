@@ -35,13 +35,8 @@ def query_with_chunks(question, context, chunk_size=450):
 def main():
     st.title("SMVDU Information Chatbot")
     
-    # URL of the university icon
     image_url = "https://smvdu.ac.in/wp-content/uploads/2023/08/cropped-logo-600-1.png"
-
-    # Display the image
     st.image(image_url, width=100)
-    
-    # Define the context
     context = """
      You are an AI trained to provide information **only** from the following context. Do not use any other information, knowledge, or data that is not explicitly mentioned here. If the answer to a question is not in the provided context, respond with "I can only provide information based on the context given. Please refer to the official sources for more details."
     

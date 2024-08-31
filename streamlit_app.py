@@ -1,12 +1,11 @@
 import streamlit as st
 import requests
+import textwrap
 
-# Define the API token and URL
 API_TOKEN = "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"
 API_URL = "https://api-inference.huggingface.co/models/google-bert/bert-large-uncased-whole-word-masking-finetuned-squad"
 headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
-# Function to query the Hugging Face API
 def query(payload):
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
@@ -20,9 +19,22 @@ def query(payload):
         st.error(f"Raw response: {response.text}")
     return None
 
-# Streamlit app
+def query_with_chunks(question, context, chunk_size=450):
+    chunks = textwrap.wrap(context, chunk_size)
+    answers = []
+    
+    for i, chunk in enumerate(chunks):
+        payload = {"inputs": {"question": question, "context": chunk}}
+        result = query(payload)
+        if result:
+            answers.append(result.get("answer", "No answer found"))
+    
+    combined_answer = " ".join(answers).strip()
+    return combined_answer
+
 def main():
     st.title("SMVDU Information Chatbot")
+    
     # URL of the university icon
     image_url = "https://smvdu.ac.in/wp-content/uploads/2023/08/cropped-logo-600-1.png"
 
@@ -31,7 +43,7 @@ def main():
     
     # Define the context
     context = """
-    You are an AI trained to provide information **only** from the following context. Do not use any other information, knowledge, or data that is not explicitly mentioned here. If the answer to a question is not in the provided context, respond with "I can only provide information based on the context given. Please refer to the official sources for more details."
+     You are an AI trained to provide information **only** from the following context. Do not use any other information, knowledge, or data that is not explicitly mentioned here. If the answer to a question is not in the provided context, respond with "I can only provide information based on the context given. Please refer to the official sources for more details."
     
         - About University
         Shri Mata Vaishno Devi University (SMVDU) was established under an Act of J&K State Legislature in 1999 as a fully residential and technical university, the first of its kind in J&K. Recognized by UGC under Section 2(f) & 12(B) of the UGC Act of 1956, the university receives funding from UGC. The university ranked 26th among Architecture Institutions, 101-150 among Engineering Institutions and 151-200 among the top Universities in the National Institutional Ranking Framework (NIRF 2023) declared by the MHRD, Govt. of India.
@@ -211,32 +223,24 @@ def main():
     
     The information provided should be strictly related to Shri Mata Vaishno Devi University (also known as SMVDU). Any mention of other universities should be avoided.
     """
+    
 
-    # Initialize session state to store questions and answers
-    if "history" not in st.session_state:
-        st.session_state.history = []
-
-    # Text input for the user's question
-    user_question = st.text_input("Ask a question about SMVDU:")
-
+    user_question = st.text_input("Ask a question:")
+    
+ 
     if user_question and st.button("Submit"):
-        # Query the API
-        payload = {"inputs": {"question": user_question, "context": context}}
-        result = query(payload)
-        
-        # Store the question and answer in session state
-        if result:
-            answer = result.get("answer", "No answer found")
-            st.session_state.history.append({"question": user_question, "answer": answer})
-            user_question = ""  # Clear input after submission
-        
-    # Display the history of questions and answers
-    if st.session_state.history:
-        st.write("### Previous Questions and Answers")
-        for entry in st.session_state.history:
-            st.write(f"**Question:** {entry['question']}")
-            st.write(f"**Answer:** {entry['answer']}")
-            st.write("---")
+        answer = query_with_chunks(user_question, context)
+        st.session_state.history.append({"question": user_question, "answer": answer})
+        user_question = ""  # Clear input after submission
+    
+    st.subheader("Conversation History")
+    for entry in st.session_state.history:
+        st.markdown(f"**Q:** {entry['question']}")
+        st.markdown(f"**A:** {entry['answer']}")
+    
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 
 if __name__ == "__main__":
     main()
